@@ -23,7 +23,7 @@ except ImportError:
 # ═════════════════════════════════════════════════════════════════════════════
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'batikverse-secret-dev-2025')
-app.config['UPLOAD_FOLDER']       = 'uploads'
+app.config['UPLOAD_FOLDER']       = '/tmp/uploads'
 app.config['MAX_CONTENT_LENGTH']  = 16 * 1024 * 1024
 app.config['ALLOWED_EXTENSIONS']  = {'png', 'jpg', 'jpeg', 'webp'}
 
