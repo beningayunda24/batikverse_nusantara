@@ -93,7 +93,7 @@ models/
 └── class_labels.npy
 ```
 
-Pastikan `class_labels.npy` berisi array 20 label sesuai urutan output model:
+Pastikan `class_labels.npy` berisi array 22 label sesuai urutan output model:
 ```python
 import numpy as np
 labels = ['Betawi', 'Bokor Kencono', 'Buketan', 'Dayak', 'Jlamprang',
