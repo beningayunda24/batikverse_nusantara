@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}404 — Halaman Tidak Ditemukan | BATIKVERSE NUSANTARA{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container text-center">
+    <div class="error-num">404</div>
+    <h2 style="color: var(--indigo); margin: 1rem 0 0.5rem;">Halaman Tidak Ditemukan</h2>
+    <p class="error-msg">
+      Seperti motif batik yang belum teridentifikasi — halaman ini tidak ada dalam koleksi kami.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-house"></i> Kembali ke Beranda
+      </a>
+      <a href="{{ url_for('eksplorasi') }}" class="btn btn-outline btn-lg">
+        <i class="fas fa-compass"></i> Eksplorasi Motif
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

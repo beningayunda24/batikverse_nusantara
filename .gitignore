@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+
+# Uploads
+uploads/
+
+# ML Models (too large for git — use git-lfs or external storage)
+models/*.h5
+models/*.pb
+models/*.tflite
+
+# Database
+*.sql.gz
+*.dump
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

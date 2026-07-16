@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}BATIKVERSE NUSANTARA{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}Eksplorasi, cintai, dan lestarikan batik Indonesia melalui teknologi AI.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}"/>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="{{ url_for('index') }}" class="nav-brand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-text">BATIKVERSE<span class="brand-sub">NUSANTARA</span></span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="nav-links" id="navLinks">
+      <a href="{{ url_for('index') }}"      class="nav-link {% if request.endpoint=='index' %}active{% endif %}">Beranda</a>
+      <a href="{{ url_for('eksplorasi') }}" class="nav-link {% if request.endpoint=='eksplorasi' %}active{% endif %}">Eksplorasi</a>
+      <a href="{{ url_for('finder') }}"     class="nav-link {% if request.endpoint=='finder' %}active{% endif %}">Batik Finder</a>
+      <a href="{{ url_for('compare') }}"    class="nav-link {% if request.endpoint=='compare' %}active{% endif %}">Bandingkan</a>
+      <a href="{{ url_for('predict') }}"    class="nav-link nav-link-cta {% if request.endpoint=='predict' %}active{% endif %}">
+        <i class="fas fa-brain"></i> Klasifikasi AI
+      </a>
+
+      {% if current_user %}
+        <!-- User sudah login -->
+        <div class="nav-user-menu">
+          <button class="nav-user-btn" id="userMenuBtn">
+            <i class="fas fa-circle-user"></i>
+            <span>{{ current_user.nama.split()[0] }}</span>
+            <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i>
+          </button>
+          <div class="nav-dropdown" id="userDropdown">
+            <a href="{{ url_for('history') }}"><i class="fas fa-clock-rotate-left"></i> Riwayat Saya</a>
+            <a href="{{ url_for('profil') }}"><i class="fas fa-user-gear"></i> Profil & Preferensi</a>
+            <div class="dropdown-divider"></div>
+            <a href="{{ url_for('logout') }}" class="dropdown-logout"><i class="fas fa-right-from-bracket"></i> Keluar</a>
+          </div>
+        </div>
+      {% else %}
+        <!-- Belum login -->
+        <a href="{{ url_for('login') }}"    class="nav-link {% if request.endpoint=='login' %}active{% endif %}">Masuk</a>
+        <a href="{{ url_for('register') }}" class="nav-link btn-register {% if request.endpoint=='register' %}active{% endif %}">Daftar</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">
+          <i class="fas {% if cat=='error' %}fa-circle-xmark{% elif cat=='warning' %}fa-triangle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+          {{ msg }}
+          <button class="flash-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-text">BATIKVERSE<span class="brand-sub">NUSANTARA</span></span>
+      <p class="footer-sub">Platform edukasi batik Indonesia berbasis kecerdasan buatan.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Jelajahi</h4>
+        <a href="{{ url_for('eksplorasi') }}">Eksplorasi Motif</a>
+        <a href="{{ url_for('finder') }}">Batik Finder</a>
+        <a href="{{ url_for('compare') }}">Bandingkan Motif</a>
+      </div>
+      <div class="footer-col">
+        <h4>Teknologi</h4>
+        <a href="{{ url_for('predict') }}">Klasifikasi AI</a>
+        <a href="{{ url_for('history') }}">Riwayat Prediksi</a>
+      </div>
+      <div class="footer-col">
+        <h4>Motif Batik</h4>
+        <span>Jawa · Bali · Sumatera</span>
+        <span>Kalimantan · Sulawesi · Papua</span>
+        <span>Maluku · Nusa Tenggara</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 BatikVerse Nusantara</p>
+    <p>Dikembangkan oleh <strong>Bening Julya Permata Ayunda</strong></p>
+    <p>Flask · MySQL · TensorFlow · MobileNetV2</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

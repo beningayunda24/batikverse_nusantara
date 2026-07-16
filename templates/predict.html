@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% block title %}Klasifikasi AI — BATIKVERSE NUSANTARA{% endblock %}
+{% block meta_desc %}Identifikasi motif batik dari foto menggunakan AI MobileNetV2. Upload gambar batik dan dapatkan hasil klasifikasi instan.{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="predict-hero">
+  <div class="container text-center">
+    <p class="section-eyebrow" style="color: var(--gold);">Kecerdasan Buatan</p>
+    <h1 style="color: var(--gold-pale);">Klasifikasi Motif Batik AI</h1>
+    <p style="color: rgba(245,232,200,0.7); max-width: 540px; margin: 0.75rem auto 0;">
+      Upload foto kain batikmu dan biarkan model MobileNetV2 kami mengidentifikasi motifnya.
+      Mendukung 22 motif batik pilihan nusantara.
+    </p>
+  </div>
+</section>
+
+<section class="section-sm" style="background: var(--cream);">
+  <div class="container">
+    <div style="max-width: 760px; margin: 0 auto;">
+
+      <!-- Upload Form -->
+      <div style="background: white; border-radius: var(--radius-xl); padding: 2.5rem; box-shadow: var(--shadow-lg); border: 1px solid var(--border); margin-bottom: 2rem;">
+        <h2 style="color: var(--indigo); font-size: 1.3rem; margin-bottom: 0.5rem;">
+          <i class="fas fa-camera-retro" style="color: var(--gold);" aria-hidden="true"></i> Unggah Gambar Batik
+        </h2>
+        <p style="color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 1.75rem;">
+          Pastikan gambar jelas, memiliki pencahayaan baik, dan motif batik terlihat dengan baik.
+          Format: JPG, PNG, JPEG, WEBP. Maks 16 MB.
+        </p>
+
+        <form id="predictForm" method="POST" action="{{ url_for('predict') }}" enctype="multipart/form-data">
+          <div class="upload-zone" id="uploadZone" role="button" tabindex="0"
+               aria-label="Klik atau seret gambar batik untuk diunggah"
+               onclick="document.getElementById('fileInput').click()">
+            <div id="uploadDefault">
+              <div class="upload-icon"><i class="fas fa-cloud-arrow-up" aria-hidden="true"></i></div>
+              <div class="upload-title">Klik atau Seret Gambar ke Sini</div>
+              <div class="upload-subtitle">JPG · PNG · WEBP · Maks 16 MB</div>
+            </div>
+            <div id="uploadPreview" class="upload-preview" style="display: none;">
+              <img id="previewImg" src="" alt="Preview gambar yang akan diunggah">
+              <p id="previewName" style="margin-top: 0.75rem; font-family: var(--font-ui); font-size: 0.85rem; color: var(--ink-soft);"></p>
+            </div>
+          </div>
+          <input type="file" id="fileInput" name="file" accept="image/png,image/jpg,image/jpeg,image/webp" style="display: none;">
+
+          <div id="uploadError" style="display: none; color: var(--terracotta); font-family: var(--font-ui); font-size: 0.85rem; margin-top: 0.75rem;" role="alert"></div>
+
+          <!-- Tips -->
+          <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin: 1.5rem 0;">
+            <div style="text-align: center; padding: 0.75rem; background: var(--cream-warm); border-radius: var(--radius);">
+              <i class="fas fa-sun" style="color: var(--gold); display: block; margin-bottom: 0.4rem;" aria-hidden="true"></i>
+              <span style="font-size: 0.78rem; color: var(--ink-soft); font-family: var(--font-ui);">Pencahayaan baik</span>
+            </div>
+            <div style="text-align: center; padding: 0.75rem; background: var(--cream-warm); border-radius: var(--radius);">
+              <i class="fas fa-expand" style="color: var(--gold); display: block; margin-bottom: 0.4rem;" aria-hidden="true"></i>
+              <span style="font-size: 0.78rem; color: var(--ink-soft); font-family: var(--font-ui);">Motif terlihat jelas</span>
+            </div>
+            <div style="text-align: center; padding: 0.75rem; background: var(--cream-warm); border-radius: var(--radius);">
+              <i class="fas fa-image" style="color: var(--gold); display: block; margin-bottom: 0.4rem;" aria-hidden="true"></i>
+              <span style="font-size: 0.78rem; color: var(--ink-soft); font-family: var(--font-ui);">Foto fokus & tajam</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn" disabled>
+            <i class="fas fa-brain" aria-hidden="true"></i> Klasifikasi Sekarang
+          </button>
+        </form>
+
+        <!-- Loading -->
+        <div class="loader" id="loader">
+          <div class="spinner"></div>
+          <p style="font-family: var(--font-ui); color: var(--ink-soft);">Model AI sedang menganalisis gambar…</p>
+        </div>
+      </div>
+
+      <!-- Hasil Prediksi -->
+      {% if result %}
+        {% if result.status == 'success' %}
+        <!-- SUCCESS -->
+        <div class="result-card">
+          <div style="display: grid; grid-template-columns: auto 1fr; gap: 2rem; align-items: start;">
+            <div>
+              <img src="{{ result.img_url }}"
+                alt="Gambar yang dianalisis"
+                style="width: 160px; height: 160px; object-fit: cover; border-radius: var(--radius-lg); border: 2px solid rgba(200,144,42,0.4);">
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-circle-check" style="color: #4caf50; font-size: 1.25rem;" aria-hidden="true"></i>
+                <span style="font-family: var(--font-ui); font-size: 0.8rem; color: rgba(245,232,200,0.6); text-transform: uppercase; letter-spacing: 0.1em;">Teridentifikasi</span>
+              </div>
+              <div class="result-title">{{ result.predicted }}</div>
+              <div style="margin-top: 0.5rem; margin-bottom: 1rem;">
+                <span style="font-family: var(--font-ui); font-size: 0.85rem; color: rgba(245,232,200,0.6);">Confidence:</span>
+                <span style="font-family: var(--font-ui); font-size: 1rem; font-weight: 700; color: var(--gold); margin-left: 0.5rem;">{{ result.confidence }}%</span>
+              </div>
+              <div class="confidence-bar">
+                <div class="confidence-fill" style="width: {{ result.confidence }}%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top 3 -->
+          <div style="margin-top: 1.5rem; border-top: 1px solid rgba(200,144,42,0.2); padding-top: 1.25rem;">
+            <div style="font-family: var(--font-ui); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(245,232,200,0.5); margin-bottom: 0.75rem;">Top 3 Prediksi</div>
+            <ul class="top3-list">
+              {% for item in result.top3 %}
+              <li class="top3-item">
+                <div class="top3-rank">{{ loop.index }}</div>
+                <div class="top3-name">{{ item.label }}</div>
+                <div class="top3-pct">{{ item.percentage }}%</div>
+                <div style="width: 80px; background: rgba(255,255,255,0.1); border-radius: 100px; height: 4px; overflow: hidden;">
+                  <div style="height: 100%; width: {{ item.percentage }}%; background: var(--gold); border-radius: 100px;"></div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+
+        <!-- Detail Motif dari DB -->
+        {% if result.motif_detail %}
+        <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 2rem; margin-top: 1.5rem; box-shadow: var(--shadow-sm);">
+          <h3 style="color: var(--indigo); margin-bottom: 1.5rem; font-size: 1.1rem;">
+            <i class="fas fa-info-circle" style="color: var(--gold);" aria-hidden="true"></i>
+            Tentang {{ result.motif_detail.nama_motif }}
+          </h3>
+          <div class="grid grid-2" style="gap: 1.25rem; margin-bottom: 1.5rem;">
+            <div>
+              <div style="font-size: 0.75rem; font-family: var(--font-ui); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.35rem;">Daerah Asal</div>
+              <div style="color: var(--indigo); font-weight: 500;">{{ result.motif_detail.asal_daerah }}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; font-family: var(--font-ui); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.35rem;">Tingkat Kelangkaan</div>
+              <span class="badge badge-{{ 'red' if result.motif_detail.tingkat_kelangkaan == 'Sangat Langka' else 'orange' if result.motif_detail.tingkat_kelangkaan == 'Langka' else 'green' }}">
+                {{ result.motif_detail.tingkat_kelangkaan }}
+              </span>
+            </div>
+          </div>
+          {% if result.motif_detail.filosofi %}
+          <div style="padding: 1.25rem; background: var(--cream-warm); border-radius: var(--radius-lg); border-left: 3px solid var(--gold); margin-bottom: 1.5rem;">
+            <div style="font-size: 0.75rem; font-family: var(--font-ui); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 0.5rem;">Filosofi</div>
+            <p style="color: var(--ink-soft); font-size: 0.9rem; line-height: 1.7; margin: 0;">{{ result.motif_detail.filosofi[:300] }}{% if result.motif_detail.filosofi|length > 300 %}…{% endif %}</p>
+          </div>
+          {% endif %}
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="{{ url_for('detail_motif', id_motif=result.motif_detail.id_motif) }}" class="btn btn-primary">
+              <i class="fas fa-book-open" aria-hidden="true"></i> Baca Selengkapnya
+            </a>
+            <a href="{{ url_for('compare') }}" class="btn btn-outline">
+              <i class="fas fa-scale-balanced" aria-hidden="true"></i> Bandingkan
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        {% elif result.status in ['unrecognized', 'non_batik'] %}
+          <div class="result-unknown" style="text-align: center; padding: 2rem 1rem;">
+            {% if result.img_url %}
+            <img src="{{ result.img_url }}"
+              alt="Gambar yang diunggah"
+              style="width: 160px; height: 160px; object-fit: cover; border-radius: var(--radius-lg); margin-bottom: 1rem; border: 2px solid rgba(200,144,42,0.4);">
+            {% endif %}
+
+            {% if result.status == 'non_batik' or result.reason == 'non_batik' %}
+              <i class="fas fa-triangle-exclamation" style="font-size: 3rem; color: var(--terracotta); display: block; margin-bottom: 1rem;" aria-hidden="true"></i>
+              <h3 style="color: var(--terracotta); font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 0.75rem;">
+                Gambar Bukan Motif Batik
+              </h3>
+              <p style="color: var(--ink-soft); margin-bottom: 1.5rem;">
+                Gambar yang diunggah bukan merupakan motif batik yang termasuk dalam dataset penelitian.
+              </p>
+            
+            {% else %}
+              <i class="fas fa-circle-question" style="font-size: 3rem; color: var(--terracotta); display: block; margin-bottom: 1rem;" aria-hidden="true"></i>
+              <h3 style="color: var(--terracotta); font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 0.75rem;">
+                Motif Tidak Dikenali
+              </h3>
+              <p style="color: var(--ink-soft); margin-bottom: 2rem;">
+                Gambar yang diunggah bukan merupakan motif batik.
+              </p>
+            {% endif %}
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+              <a href="{{ url_for('predict') }}" class="btn btn-dark" style="margin-right: 0.75rem;">
+                <i class="fas fa-redo" aria-hidden="true"></i> Coba Gambar Lain
+              </a>
+              <a href="{{ url_for('eksplorasi') }}" class="btn btn-outline">
+                <i class="fas fa-compass" aria-hidden="true"></i> Jelajahi Motif
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <!-- Link Riwayat -->
+      <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+        <p style="color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 0.75rem;">Ingin melihat klasifikasi sebelumnya?</p>
+        <a href="{{ url_for('history') }}" class="btn btn-outline">
+          <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Lihat Riwayat Prediksi
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 Motif yang Didukung -->
+<section class="section-sm" style="background: var(--indigo);">
+  <div class="container text-center">
+    <p style="font-family: var(--font-ui); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 1.25rem;">22 Motif yang Didukung</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+      {% set motifs_list = ['Barong', 'Gentongan', 'Jlamprang', 'Kawung', 'Mega Mendung', 'Ondel-Ondel', 'Parang Rusak', 'Pring', 'Truntum', 'Tumpal', 'Dayak', 'Insang', 
+      'Pala', 'Lumbung', 'Asmat', 'Cendrawasih', 'Lontara', 'Bledheg', 'Boraspati', 'Gajah', 'Pintu Aceh', 'Rumah Minang'] %}
+      {% for m in motifs_list %}
+      <span style="padding: 0.3rem 0.85rem; border: 1px solid rgba(200,144,42,0.3); border-radius: 100px; font-family: var(--font-ui); font-size: 0.8rem; color: rgba(245,232,200,0.7);">{{ m }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const zone      = document.getElementById('uploadZone');
+const input     = document.getElementById('fileInput');
+const defDiv    = document.getElementById('uploadDefault');
+const prevDiv   = document.getElementById('uploadPreview');
+const prevImg   = document.getElementById('previewImg');
+const prevName  = document.getElementById('previewName');
+const submitBtn = document.getElementById('submitBtn');
+const form      = document.getElementById('predictForm');
+const loader    = document.getElementById('loader');
+const errorBox  = document.getElementById('uploadError');
+
+const MAX_SIZE = 16 * 1024 * 1024; // 16 MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+function validateFile(file) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return 'Format file tidak didukung. Gunakan JPG, PNG, atau WEBP.';
+  }
+  if (file.size > MAX_SIZE) {
+    return 'Ukuran file melebihi batas 16 MB.';
+  }
+  return null;
+}
+
+function resetUpload() {
+  defDiv.style.display = 'block';
+  prevDiv.style.display = 'none';
+  submitBtn.disabled = true;
+  input.value = '';
+}
+
+function showPreview(file) {
+  const errorMsg = validateFile(file);
+  if (errorMsg) {
+    errorBox.textContent = errorMsg;
+    errorBox.style.display = 'block';
+    resetUpload();
+    return;
+  }
+  errorBox.style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    prevImg.src = e.target.result;
+    prevName.textContent = file.name;
+    defDiv.style.display = 'none';
+    prevDiv.style.display = 'block';
+    submitBtn.disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+input.addEventListener('change', () => {
+  if (input.files[0]) showPreview(input.files[0]);
+});
+
+zone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    input.click();
+  }
+});
+
+zone.addEventListener('dragover', e => {
+  e.preventDefault();
+  zone.classList.add('drag-over');
+});
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    input.files = e.dataTransfer.files;
+    showPreview(file);
+  }
+});
+
+form.addEventListener('submit', (e) => {
+  if (!input.files.length || submitBtn.disabled) {
+    e.preventDefault();
+    return;
+  }
+  submitBtn.style.display = 'none';
+  loader.classList.add('active');
+});
+</script>
+{% endblock %}

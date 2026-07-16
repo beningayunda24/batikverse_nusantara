@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+{% block title %}Bandingkan Motif Batik — BATIKVERSE NUSANTARA{% endblock %}
+
+{% block content %}
+
+<section class="detail-hero" style="padding:3rem 0;">
+  <div class="container">
+    <p class="section-eyebrow" style="color:var(--gold);">Analisis Perbandingan</p>
+    <h1 style="color:var(--gold-pale);">Bandingkan Batik</h1>
+    <p style="color:rgba(245,232,200,0.7);margin-top:0.5rem;">
+      Pilih dua motif atau dua daerah untuk membandingkan karakteristik batiknya.
+    </p>
+  </div>
+</section>
+
+<section class="section-sm" style="background:var(--cream);">
+  <div class="container">
+
+    <!-- Mode Selector -->
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;margin-bottom:2rem;box-shadow:var(--shadow-sm);">
+      <form method="POST" action="{{ url_for('compare') }}">
+
+        <!-- Mode Tabs -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;margin-bottom:1.75rem;border-bottom:2px solid var(--border);">
+          <button type="button" class="profile-tab {% if mode=='motif' %}active{% endif %}"
+              style="justify-self:center;"
+              onclick="switchMode('motif')">
+            Bandingkan Dua Motif
+          </button>
+          <button type="button" class="profile-tab {% if mode=='daerah' %}active{% endif %}"
+              style="justify-self:center;"
+              onclick="switchMode('daerah')">
+            Bandingkan Dua Daerah/Pulau
+          </button>
+        </div>
+        <input type="hidden" name="mode" id="modeInput" value="{{ mode }}">
+
+        <!-- Panel: Motif -->
+        <div id="panelMotif" style="display:{{ 'block' if mode=='motif' else 'none' }};">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+            <div class="form-group">
+              <label class="form-label">Motif Pertama</label>
+              <select name="motif_a" class="form-control form-select">
+                <option value="">-- Pilih Motif --</option>
+                {% for m in all_motifs %}
+                <option value="{{ m.id_motif }}"
+                  {% if motif_a and motif_a.id_motif==m.id_motif %}selected{% endif %}>
+                  {{ m.pulau }} · {{ m.nama_motif }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Motif Kedua</label>
+              <select name="motif_b" class="form-control form-select">
+                <option value="">-- Pilih Motif --</option>
+                {% for m in all_motifs %}
+                <option value="{{ m.id_motif }}"
+                  {% if motif_b and motif_b.id_motif==m.id_motif %}selected{% endif %}>
+                  {{ m.pulau }} · {{ m.nama_motif }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel: Daerah -->
+        <div id="panelDaerah" style="display:{{ 'block' if mode=='daerah' else 'none' }};">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+            <div class="form-group">
+              <label class="form-label">Pulau Pertama</label>
+              <select name="pulau_a" class="form-control form-select">
+                <option value="">-- Pilih Pulau --</option>
+                {% for p in pulaus %}
+                <option value="{{ p.pulau }}"
+                  {% if region_a and region_a.pulau==p.pulau %}selected{% endif %}>
+                  {{ p.pulau }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pulau Kedua</label>
+              <select name="pulau_b" class="form-control form-select">
+                <option value="">-- Pilih Pulau --</option>
+                {% for p in pulaus %}
+                <option value="{{ p.pulau }}"
+                  {% if region_b and region_b.pulau==p.pulau %}selected{% endif %}>
+                  {{ p.pulau }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-top:1.25rem;">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-scale-balanced"></i> Bandingkan Sekarang
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── Hasil: Perbandingan 2 Motif ───────────────────────────── -->
+    {% if motif_a and motif_b %}
+    <div style="margin-bottom:1.5rem;">
+      <h2 style="color:var(--indigo);text-align:center;">
+        {{ motif_a.nama_motif.split('_')[-1] }} <span style="color:var(--gold);">vs</span> {{ motif_b.nama_motif.split('_')[-1] }}
+      </h2>
+    </div>
+
+    <div style="overflow-x:auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);border:1px solid var(--border);">
+      <table class="compare-table" style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th style="width: 20%; color: var(--indigo);">Aspek</th>
+            <th class="compare-motif-header" style="width: 40%;">
+              <div class="compare-motif-name">{{ motif_a.nama_motif.split('_')[-1] }}</div>
+              <div class="compare-motif-daerah">{{ motif_a.asal_daerah }} · {{ motif_a.pulau }}</div>
+            </th>
+            <th class="compare-motif-header" style="width: 40%;">
+              <div class="compare-motif-name">{{ motif_b.nama_motif.split('_')[-1] }}</div>
+              <div class="compare-motif-daerah">{{ motif_b.asal_daerah }} · {{ motif_b.pulau }}</div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% set rarity_class = {
+            'umum':'kelangkaan-umum',
+            'terbatas':'kelangkaan-terbatas',
+            'adat':'kelangkaan-adat',
+            'keraton':'kelangkaan-keraton',
+            'khusus':'kelangkaan-khusus'
+          } %}
+
+          {% set rows = [
+            ('Daerah Asal', 'daerah_asal', 'fas fa-map-marker-alt'),
+            ('Jenis Batik', 'jenis_batik', 'fas fa-hands'),
+            ('Warna Dominan', 'warna_dominan', 'fas fa-palette'),
+            ('Filosofi', 'filosofi', 'fas fa-yin-yang'),
+            ('Karakteristik', 'karakteristik', 'fas fa-eye'),
+            ('Penggunaan', 'penggunaan', 'fas fa-calendar'),
+            ('Acara Cocok', 'acara_cocok', 'fas fa-star'),
+            ('Kelangkaan', 'tingkat_kelangkaan', 'fas fa-gem'),
+          ] %}
+
+          {% for label, field, icon in rows %}
+          <tr>
+            <!-- KOLOM 1: NAMA ASPEK -->
+            <td style="font-family:var(--font-ui);font-size:0.82rem;font-weight:600;color:var(--ink-soft); width: 180px;">
+              <i class="fas {{ icon }}" style="color:var(--gold);width:16px;"></i> {{ label }}
+            </td>
+
+            <!-- KOLOM 2: DATA MOTIF A -->
+             <td>
+              {% if field == 'daerah_asal' %}
+                {{ motif_a.provinsi or '—' }}
+              {% elif field == 'warna_dominan' %}
+                {% if motif_a.warna_dominan %}
+                  {% for warna in motif_a.warna_dominan.split(',') %}
+                    <span class="color-chip">{{ warna.strip() }}</span>
+                  {% endfor %}
+                {% else %}—{% endif %}
+              {% elif field == 'acara_cocok' %}
+                {% if motif_a.acara_cocok %}
+                  {% for acara in motif_a.acara_cocok.split(',') %}
+                    <span class="info-chip">{{ acara.strip() }}</span>
+                  {% endfor %}
+                {% else %}—{% endif %}
+              {% elif field == 'tingkat_kelangkaan' %}
+                {% if motif_a.tingkat_kelangkaan %}
+                  <span class="kelangkaan-badge {{ rarity_class.get(motif_a.tingkat_kelangkaan|lower, 'kelangkaan-khusus') }}">
+                    <i class="fas fa-gem"></i> {{ motif_a.tingkat_kelangkaan }}
+                  </span>
+                {% else %}—{% endif %}
+              {% else %}
+                {{ motif_a.get(field) or '—' }}
+              {% endif %}
+            </td>
+
+            <!-- KOLOM 3: DATA MOTIF B -->
+            <td>
+              {% if field == 'daerah_asal' %}
+                {{ motif_b.provinsi or '—' }}
+              {% elif field == 'warna_dominan' %}
+                {% if motif_b.warna_dominan %}
+                  {% for warna in motif_b.warna_dominan.split(',') %}
+                    <span class="color-chip">{{ warna.strip() }}</span>
+                  {% endfor %}
+                {% else %}—{% endif %}
+              {% elif field == 'acara_cocok' %}
+                {% if motif_b.acara_cocok %}
+                  {% for acara in motif_b.acara_cocok.split(',') %}
+                    <span class="info-chip">{{ acara.strip() }}</span>
+                  {% endfor %}
+                {% else %}—{% endif %}
+              {% elif field == 'tingkat_kelangkaan' %}
+                {% if motif_b.tingkat_kelangkaan %}
+                  <span class="kelangkaan-badge {{ rarity_class.get(motif_b.tingkat_kelangkaan|lower, 'kelangkaan-khusus') }}">
+                    <i class="fas fa-gem"></i> {{ motif_b.tingkat_kelangkaan }}
+                  </span>
+                {% else %}—{% endif %}
+              {% else %}
+                {{ motif_b.get(field) or '—' }}
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+
+          <!-- Harga -->
+          <tr>
+            <td style="font-family:var(--font-ui);font-size:0.82rem;font-weight:600;color:var(--ink-soft);">
+              <i class="fas fa-tag" style="color:var(--gold);width:16px;"></i> Harga Cap
+            </td>
+            <td>
+              {% if motif_a.harga_cap_min %}
+              Rp{{ '{:,.0f}'.format(motif_a.harga_cap_min) }} – Rp{{ '{:,.0f}'.format(motif_a.harga_cap_max) }}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if motif_b.harga_cap_min %}
+              Rp{{ '{:,.0f}'.format(motif_b.harga_cap_min) }} – Rp{{ '{:,.0f}'.format(motif_b.harga_cap_max) }}
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-ui);font-size:0.82rem;font-weight:600;color:var(--ink-soft);">
+              <i class="fas fa-pen-nib" style="color:var(--gold);width:16px;"></i> Harga Tulis
+            </td>
+            <td>
+              {% if motif_a.harga_tulis_min %}
+              Rp{{ '{:,.0f}'.format(motif_a.harga_tulis_min) }} – Rp{{ '{:,.0f}'.format(motif_a.harga_tulis_max) }}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if motif_b.harga_tulis_min %}
+              Rp{{ '{:,.0f}'.format(motif_b.harga_tulis_min) }} – Rp{{ '{:,.0f}'.format(motif_b.harga_tulis_max) }}
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td></td> 
+            <td style="padding: 1.5rem 1rem;">
+              <a href="{{ url_for('detail_motif', id_motif=motif_a.id_motif) }}" 
+                class="btn btn-outline" 
+                style="display: block; text-align: center; width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #d4a373; color: #d4a373; border-radius: 8px; font-weight: 600; text-decoration: none; box-sizing: border-box;">
+                Detail {{ motif_a.nama_motif }}
+              </a>
+            </td>
+            <td style="padding: 1.5rem 1rem;">
+              <a href="{{ url_for('detail_motif', id_motif=motif_b.id_motif) }}" 
+                class="btn btn-outline" 
+                style="display: block; text-align: center; width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #d4a373; color: #d4a373; border-radius: 8px; font-weight: 600; text-decoration: none; box-sizing: border-box;">
+                Detail {{ motif_b.nama_motif }}
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <!-- ── Hasil: Perbandingan 2 Daerah ──────────────────────────── -->
+    {% if region_a and region_b %}
+    <h2 style="color:var(--indigo);text-align:center;margin-bottom:1.5rem;">
+      Batik <span style="color:var(--gold);">{{ region_a.pulau }}</span>
+      vs
+      Batik <span style="color:var(--gold);">{{ region_b.pulau }}</span>
+    </h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+      {% for region in [region_a, region_b] %}
+      <div class="daerah-summary-card">
+        <h3>🏝️ {{ region.pulau }}</h3>
+        <p style="color:var(--ink-soft);font-size:0.85rem;margin-bottom:1rem;">
+          {{ region.motifs|length }} motif dalam koleksi
+        </p>
+        <div style="margin-bottom:1rem;">
+          <div style="font-size:0.75rem;font-family:var(--font-ui);color:var(--gold);font-weight:600;margin-bottom:0.5rem;">MOTIF TERSEDIA</div>
+          {% for m in region.motifs %}
+          <a href="{{ url_for('detail_motif', id_motif=m.id_motif) }}" style="text-decoration:none;">
+            <span class="motif-chip">
+              <i class="fas fa-layer-group" style="font-size:0.65rem;color:var(--gold);"></i>
+              {{ m.nama_motif }}
+            </span>
+          </a>
+          {% endfor %}
+        </div>
+        {% if region.motifs %}
+        {% set warna_flat = [] %}
+        {% for m in region.motifs %}
+          {% if m.warna_dominan %}
+            {% for w in m.warna_dominan.split(',') %}
+              {% set _ = warna_flat.append(w.strip()) %}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+        {% set warna_list = warna_flat|unique|list %}
+        {% if warna_list %}
+        <div style="margin-bottom:1rem;">
+          <div style="font-size:0.75rem;font-family:var(--font-ui);color:var(--gold);font-weight:600;margin-bottom:0.5rem;">WARNA DOMINAN</div>
+          <p style="color:var(--ink-soft);font-size:0.85rem;">{{ warna_list[:5]|join(', ') }}</p>
+        </div>
+        {% endif %}
+
+        {% set jenis_flat = [] %}
+        {% for m in region.motifs %}
+          {% if m.jenis_batik %}
+            {% for j in m.jenis_batik.split(',') %}
+              {% set _ = jenis_flat.append(j.strip()) %}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+        {% set jenis_list = jenis_flat|unique|list %}
+        {% if jenis_list %}
+        <div>
+          <div style="font-size:0.75rem;font-family:var(--font-ui);color:var(--gold);font-weight:600;margin-bottom:0.5rem;">JENIS BATIK</div>
+          <p style="color:var(--ink-soft);font-size:0.85rem;">{{ jenis_list[:4]|join(', ') }}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Tabel perbandingan karakteristik daerah -->
+    <div style="margin-top:2rem;overflow-x:auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);border:1px solid var(--border);">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Aspek</th>
+            <th class="compare-motif-header">
+              <div class="compare-motif-name">{{ region_a.pulau }}</div>
+            </th>
+            <th class="compare-motif-header">
+              <div class="compare-motif-name">{{ region_b.pulau }}</div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family:var(--font-ui);font-size:0.82rem;font-weight:600;color:var(--ink-soft);">Jumlah Motif</td>
+            <td>{{ region_a.motifs|length }} motif</td>
+            <td>{{ region_b.motifs|length }} motif</td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-ui);font-size:0.82rem;font-weight:600;color:var(--ink-soft);">
+              Pengaruh Budaya
+              <div style="font-weight:400;font-size:0.72rem;opacity:0.7;">(cuplikan dari beberapa motif)</div>
+            </td>
+            <td>
+              {% if region_a.motifs %}
+              <div class="compare-items">
+                {% for motif in region_a.motifs[:3] %}
+                <div class="compare-item">
+                  <div class="compare-tag">
+                    {{ motif.nama_motif.replace('_',' ') }}
+                  </div>
+                  <div class="compare-desc">
+                    {{ motif.filosofi|truncate(110) if motif.filosofi else '-' }}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+            <td>
+              {% if region_b.motifs %}
+              <div class="compare-items">
+                {% for motif in region_b.motifs[:3] %}
+                <div class="compare-item">
+                  <div class="compare-tag">
+                    {{ motif.nama_motif.replace('_',' ') }}
+                  </div>
+                  <div class="compare-desc">
+                    {{ motif.filosofi|truncate(110) if motif.filosofi else '-' }}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-ui);font-size:0.82rem;font-weight:600;color:var(--ink-soft);">
+              Karakteristik Utama
+              <div style="font-weight:400;font-size:0.72rem;opacity:0.7;">(cuplikan dari beberapa motif)</div>
+            </td>
+            <td>
+              {% if region_a.motifs %}
+              <div class="compare-items">
+                {% for motif in region_a.motifs[:3] %}
+                <div class="compare-item">
+                  <div class="compare-tag">
+                    {{ motif.nama_motif.replace('_',' ') }}
+                  </div>
+                  <div class="compare-desc">
+                    {{ motif.karakteristik|truncate(110) if motif.karakteristik else '-' }}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+            <td>
+              {% if region_b.motifs %}
+              <div class="compare-items">
+                {% for motif in region_b.motifs[:3] %}
+                <div class="compare-item">
+                  <div class="compare-tag">
+                    {{ motif.nama_motif.replace('_',' ') }}
+                  </div>
+                  <div class="compare-desc">
+                    {{ motif.karakteristik|truncate(110) if motif.karakteristik else '-' }}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function switchMode(m) {
+  document.getElementById('modeInput').value = m;
+  document.getElementById('panelMotif').style.display  = m==='motif'  ? 'block' : 'none';
+  document.getElementById('panelDaerah').style.display = m==='daerah' ? 'block' : 'none';
+  document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+  event.target.closest('.profile-tab').classList.add('active');
+}
+</script>
+{% endblock %}

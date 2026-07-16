@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% block title %}{{ motif.nama_motif }} — BATIKVERSE NUSANTARA{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="detail-hero">
+  <div class="container detail-hero-content">
+    <div class="detail-breadcrumb">
+      <a href="{{ url_for('eksplorasi') }}">Eksplorasi</a>
+      <span style="margin:0 0.5rem;">›</span>
+      <span>{{ motif.pulau }}</span>
+      <span style="margin:0 0.5rem;">›</span>
+      <span>{{ motif.nama_motif }}</span>
+    </div>
+    <h1 class="detail-title">{{ motif.nama_motif }}</h1>
+    <div class="detail-origin">
+      <i class="fas fa-map-pin"></i>
+      {{ motif.asal_daerah }}{% if motif.provinsi %}, {{ motif.provinsi }}{% endif %}
+      · {{ motif.pulau }}
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+      {% if motif.jenis_batik %}
+      <span class="info-pill"><i class="fas fa-palette"></i> {{ motif.jenis_batik }}</span>
+      {% endif %}
+      {% if motif.tingkat_kelangkaan %}
+      <span class="info-pill"><i class="fas fa-gem"></i> {{ motif.tingkat_kelangkaan }}</span>
+      {% endif %}
+      {% if motif.warna_dominan %}
+      <span class="info-pill"><i class="fas fa-circle" style="font-size:0.6rem;"></i> {{ motif.warna_dominan }}</span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Body -->
+<section class="section-sm detail-body">
+  <div class="container">
+    <div class="detail-grid">
+
+      <!-- Sidebar -->
+      <div class="detail-sidebar">
+        <!-- Foto utama -->
+        <div class="detail-image-placeholder">
+          {% if galeri and galeri[0] %}
+            <img src="{{ url_for('static', filename='images/' ~ galeri[0].gambar) }}" 
+              alt="{{ motif.nama_motif }}"
+              style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg);">
+          {% else %}
+            <i class="fas fa-layer-group"></i>
+          {% endif %}
+        </div>
+
+        <!-- Harga -->
+        <div class="detail-price-card">
+          <div style="margin-bottom:1rem;">
+            <div class="price-label">Batik Cap</div>
+            {% if motif.harga_cap_min and motif.harga_cap_max %}
+            <div class="price-value">
+              Rp{{ '{:,.0f}'.format(motif.harga_cap_min) }} – Rp{{ '{:,.0f}'.format(motif.harga_cap_max) }}
+            </div>
+            {% else %}<div class="price-value" style="font-size:1rem;opacity:0.6;">Informasi belum tersedia</div>{% endif %}
+          </div>
+          <div style="border-top:1px solid rgba(200,144,42,0.2);padding-top:1rem;">
+            <div class="price-label">Batik Tulis</div>
+            {% if motif.harga_tulis_min and motif.harga_tulis_max %}
+            <div class="price-value">
+              Rp{{ '{:,.0f}'.format(motif.harga_tulis_min) }} – Rp{{ '{:,.0f}'.format(motif.harga_tulis_max) }}
+            </div>
+            {% else %}<div class="price-value" style="font-size:1rem;opacity:0.6;">Informasi belum tersedia</div>{% endif %}
+          </div>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div style="margin-top:1.25rem;display:flex;flex-direction:column;gap:0.75rem;">
+          <a href="{{ url_for('compare') }}?pre={{ motif.id_motif }}" class="btn btn-outline">
+            <i class="fas fa-scale-balanced"></i> Bandingkan Motif
+          </a>
+          {% if current_user %}
+          <a href="{{ url_for('predict') }}" class="btn btn-primary">
+            <i class="fas fa-camera"></i> Coba Klasifikasi AI
+          </a>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-primary">
+            <i class="fas fa-brain"></i> Login untuk Klasifikasi AI
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Konten Detail -->
+      <div>
+
+        <!-- Sejarah -->
+        {% if motif.sejarah %}
+        <div class="detail-info-section">
+          <h3><i class="fas fa-scroll"></i> Sejarah</h3>
+          <p>{{ motif.sejarah }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Filosofi -->
+        {% if motif.filosofi %}
+        <div class="detail-info-section">
+          <h3><i class="fas fa-yin-yang"></i> Filosofi & Makna</h3>
+          <div style="padding:1.25rem;background:var(--cream-warm);border-left:3px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;margin-bottom:1rem;">
+            <p style="font-style:italic;color:var(--ink-soft);line-height:1.8;">{{ motif.filosofi }}</p>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Karakteristik -->
+        {% if motif.karakteristik %}
+        <div class="detail-info-section">
+          <h3><i class="fas fa-eye"></i> Karakteristik Visual</h3>
+          <p>{{ motif.karakteristik }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Warna & Makna -->
+        <div class="detail-info-section">
+          <h3><i class="fas fa-palette"></i> Warna & Maknanya</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div>
+              <div style="font-size:0.78rem;font-family:var(--font-ui);color:var(--gold);font-weight:600;margin-bottom:0.35rem;">WARNA DOMINAN</div>
+              {% if motif.warna_dominan %}
+              <p>{{ motif.warna_dominan }}</p>
+              {% else %}<p style="color:var(--ink-soft);font-style:italic;">Belum tersedia</p>{% endif %}
+            </div>
+            <div>
+              <div style="font-size:0.78rem;font-family:var(--font-ui);color:var(--gold);font-weight:600;margin-bottom:0.35rem;">MAKNA WARNA</div>
+              {% if motif.makna_warna %}
+              <p>{{ motif.makna_warna }}</p>
+              {% else %}<p style="color:var(--ink-soft);font-style:italic;">Belum tersedia</p>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Cara Pembuatan -->
+        {% if motif.cara_pembuatan %}
+        <div class="detail-info-section">
+          <h3><i class="fas fa-hands"></i> Cara Pembuatan</h3>
+          <p>{{ motif.cara_pembuatan }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Penggunaan & Acara -->
+        <div class="detail-info-section">
+          <h3><i class="fas fa-calendar-days"></i> Penggunaan & Acara</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div>
+              <div style="font-size:0.78rem;font-family:var(--font-ui);color:var(--gold);font-weight:600;margin-bottom:0.35rem;">KAPAN DIGUNAKAN</div>
+              <p>{{ motif.penggunaan or '—' }}</p>
+            </div>
+            <div>
+              <div style="font-size:0.78rem;font-family:var(--font-ui);color:var(--gold);font-weight:600;margin-bottom:0.35rem;">COCOK UNTUK</div>
+              {% if motif.acara_cocok %}
+              <div style="display:flex;gap:0.35rem;flex-wrap:wrap;">
+                {% for acara in motif.acara_cocok.split(',') %}
+                <span class="badge badge-gold">{{ acara.strip() }}</span>
+                {% endfor %}
+              </div>
+              {% else %}<p>—</p>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Tingkat Kelangkaan -->
+        {% if motif.tingkat_kelangkaan %}
+        <div class="detail-info-section">
+          <h3><i class="fas fa-gem"></i> Tingkat Ketersediaan</h3>
+          {% set kel = motif.tingkat_kelangkaan %}
+          {% if 'umum' in kel|lower %}
+            <span class="kelangkaan-badge kelangkaan-umum"><i class="fas fa-circle-check"></i> {{ kel }}</span>
+          {% elif 'terbatas' in kel|lower %}
+            <span class="kelangkaan-badge kelangkaan-terbatas"><i class="fas fa-map-pin"></i> {{ kel }}</span>
+          {% elif 'keraton' in kel|lower %}
+            <span class="kelangkaan-badge kelangkaan-keraton"><i class="fas fa-crown"></i> {{ kel }}</span>
+          {% elif 'adat' in kel|lower %}
+            <span class="kelangkaan-badge kelangkaan-adat"><i class="fas fa-drum"></i> {{ kel }}</span>
+          {% else %}
+            <span class="kelangkaan-badge kelangkaan-khusus"><i class="fas fa-star"></i> {{ kel }}</span>
+          {% endif %}
+          {% if motif.deskripsi_kelangkaan %}
+          <p style="margin-top:0.75rem;color:var(--ink-soft);font-size:0.88rem;">{{ motif.deskripsi_kelangkaan }}</p>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Referensi -->
+        {% if motif.referensi %}
+        <div class="detail-info-section">
+          <h3><i class="fas fa-book"></i> Referensi & Sumber</h3>
+          <div style="background:var(--cream-warm);border-radius:var(--radius);padding:1rem;border:1px solid var(--border);">
+            <p style="font-size:0.85rem;color:var(--ink-soft);">{{ motif.referensi }}</p>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Motif Terkait -->
+    {% if related %}
+    <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border);">
+      <h3 style="color:var(--indigo);margin-bottom:1.5rem;font-size:1.1rem;">
+        <i class="fas fa-layer-group" style="color:var(--gold);"></i>
+        Motif Lain dari {{ motif.pulau }}
+      </h3>
+      <div class="grid grid-3" style="gap:1rem;">
+        {% for r in related %}
+        <a href="{{ url_for('detail_motif', id_motif=r.id_motif) }}" style="text-decoration:none;">
+          <div class="card" style="padding:1.25rem;">
+            <div style="font-family:var(--font-display);color:var(--indigo);font-size:1rem;font-weight:600;">{{ r.nama_motif }}</div>
+            <div style="color:var(--gold);font-size:0.78rem;margin-top:0.25rem;font-family:var(--font-ui);">{{ r.asal_daerah }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

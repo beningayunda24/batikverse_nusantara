@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Profil Saya — BATIKVERSE NUSANTARA{% endblock %}
+{% block content %}
+
+<section class="detail-hero" style="padding:2.5rem 0;">
+  <div class="container">
+    <p class="section-eyebrow" style="color:var(--gold);">Akun Pengguna</p>
+    <h1 style="color:var(--gold-pale);">Profil & Preferensi</h1>
+  </div>
+</section>
+
+<section class="section-sm" style="background:var(--cream);">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:2rem;max-width:1000px;margin:0 auto;">
+
+      <!-- ── Sidebar profil ── -->
+      <div>
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;text-align:center;box-shadow:var(--shadow-sm);margin-bottom:1.5rem;">
+          <div style="width:80px;height:80px;border-radius:50%;background:var(--indigo);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2rem;color:var(--gold);">
+            <i class="fas fa-user"></i>
+          </div>
+          <div style="font-family:var(--font-display);font-size:1.3rem;color:var(--indigo);font-weight:700;">{{ user.nama }}</div>
+          <div style="color:var(--ink-soft);font-size:0.85rem;margin-top:0.25rem;">{{ user.email }}</div>
+          <div style="font-size:0.78rem;color:var(--ink-soft);margin-top:0.5rem;">
+            <i class="fas fa-calendar-days" style="color:var(--gold);"></i>
+            Bergabung {{ user.tanggal_daftar.strftime('%d %b %Y') if user.tanggal_daftar else '—' }}
+          </div>
+        </div>
+
+        <!-- Statistik -->
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:1.5rem;box-shadow:var(--shadow-sm);">
+          <div style="font-size:0.78rem;font-family:var(--font-ui);text-transform:uppercase;letter-spacing:0.08em;color:var(--gold);margin-bottom:1rem;">Statistik Klasifikasi</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div style="text-align:center;padding:0.75rem;background:var(--cream-warm);border-radius:var(--radius);">
+              <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--gold);font-weight:700;">{{ stats.total or 0 }}</div>
+              <div style="font-size:0.72rem;color:var(--ink-soft);">Total Prediksi</div>
+            </div>
+            <div style="text-align:center;padding:0.75rem;background:var(--cream-warm);border-radius:var(--radius);">
+              <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--gold);font-weight:700;">{{ stats.berhasil or 0 }}</div>
+              <div style="font-size:0.72rem;color:var(--ink-soft);">Berhasil</div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;">
+            <a href="{{ url_for('history') }}" class="btn btn-outline" style="width:100%;text-align:center;">
+              <i class="fas fa-clock-rotate-left"></i> Lihat Riwayat
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Form Profil ── -->
+      <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+        <!-- Update Nama -->
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;box-shadow:var(--shadow-sm);">
+          <h3 style="color:var(--indigo);font-size:1.1rem;margin-bottom:1.25rem;"><i class="fas fa-user-pen" style="color:var(--gold);"></i> Informasi Profil</h3>
+          <form method="POST">
+            <input type="hidden" name="action" value="update_profil">
+            <div class="form-group">
+              <label class="form-label">Nama Lengkap</label>
+              <input type="text" name="nama" class="form-input" value="{{ user.nama }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" value="{{ user.email }}" disabled style="opacity:0.6;">
+              <small style="color:var(--ink-soft);">Email tidak dapat diubah.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+          </form>
+        </div>
+
+        <!-- Ganti Password -->
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;box-shadow:var(--shadow-sm);">
+          <h3 style="color:var(--indigo);font-size:1.1rem;margin-bottom:1.25rem;"><i class="fas fa-key" style="color:var(--gold);"></i> Ganti Password</h3>
+          <form method="POST">
+            <input type="hidden" name="action" value="update_password">
+            <div class="form-group">
+              <label class="form-label">Password Lama</label>
+              <input type="password" name="old_password" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password Baru</label>
+              <input type="password" name="new_password" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Konfirmasi Password Baru</label>
+              <input type="password" name="confirm_password" class="form-input" required>
+            </div>
+            <button type="submit" class="btn btn-outline">Ganti Password</button>
+          </form>
+        </div>
+
+        <!-- Preferensi -->
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;box-shadow:var(--shadow-sm);">
+          <h3 style="color:var(--indigo);font-size:1.1rem;margin-bottom:0.5rem;"><i class="fas fa-sliders" style="color:var(--gold);"></i> Preferensi Batik</h3>
+          <p style="color:var(--ink-soft);font-size:0.85rem;margin-bottom:1.25rem;">Preferensi ini digunakan untuk mengisi otomatis form Batik Finder.</p>
+          <form method="POST">
+            <input type="hidden" name="action" value="update_prefs">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <div class="form-group">
+                <label class="form-label">Warna Favorit</label>
+                <input type="text" name="warna_favorit" class="form-input" placeholder="mis. Biru, Merah"
+                       value="{{ prefs.warna_favorit if prefs else '' }}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Jenis Batik</label>
+                <select name="jenis_batik" class="form-input">
+                  {% for v,l in [('','Semua Jenis'),('Tulis','Batik Tulis'),('Cap','Batik Cap'),('Kombinasi','Kombinasi'),('Printing','Printing')] %}
+                  <option value="{{ v }}" {% if prefs and prefs.jenis_batik==v %}selected{% endif %}>{{ l }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Kisaran Anggaran</label>
+                <select name="anggaran" class="form-input">
+                  {% for v,l in [('','Semua Harga'),('murah','Terjangkau (< Rp100.000)'),('sedang','Menengah (Rp100K–500K)'),('mahal','Premium (> Rp500.000)')] %}
+                  <option value="{{ v }}" {% if prefs and prefs.anggaran==v %}selected{% endif %}>{{ l }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Acara Favorit</label>
+                <select name="acara_favorit" class="form-input">
+                  <option value="">Semua Acara</option>
+                  {% for a in ['Pernikahan','Wisuda','Formal','Casual','Festival','Upacara Adat','Sehari-hari','Fashion'] %}
+                  <option value="{{ a }}" {% if prefs and prefs.acara_favorit==a %}selected{% endif %}>{{ a }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Wilayah/Pulau Favorit</label>
+                <input type="text" name="wilayah_favorit" class="form-input" placeholder="mis. Jawa, Bali"
+                       value="{{ prefs.wilayah_favorit if prefs else '' }}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Kata Kunci Filosofi</label>
+                <input type="text" name="filosofi_kw" class="form-input" placeholder="mis. keberanian, cinta"
+                       value="{{ prefs.filosofi_kw if prefs else '' }}">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">
+              <i class="fas fa-floppy-disk"></i> Simpan Preferensi
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

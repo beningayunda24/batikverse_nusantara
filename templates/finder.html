@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block title %}Batik Finder — BATIKVERSE NUSANTARA{% endblock %}
+
+{% block content %}
+
+<section class="finder-hero" style="text-align:center;">
+  <div class="container">
+    <p class="section-eyebrow" style="color:var(--gold);">Rekomendasi Cerdas</p>
+    <h1 style="color:var(--gold-pale);">Batik Finder</h1>
+    <p style="color:rgba(245,232,200,0.7);max-width:480px;margin:0.75rem auto 0;">
+      Temukan motif batik yang paling sesuai dengan kebutuhanmu berdasarkan preferensi, anggaran, dan acara.
+    </p>
+  </div>
+</section>
+
+<section class="section-sm" style="background:var(--cream);">
+  <div class="container">
+    <div class="finder-form-card">
+
+      {% if current_user and prefs %}
+      <div style="background:rgba(30,45,94,0.06);border:1px solid var(--border);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem;">
+        <i class="fas fa-user-check" style="color:var(--gold);"></i>
+        <span style="font-size:0.85rem;color:var(--ink-soft);">
+          Form terisi otomatis dari preferensi tersimpan Anda.
+          <a href="{{ url_for('profil') }}" style="color:var(--gold);">Ubah preferensi</a>
+        </span>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('finder') }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label class="form-label">Kisaran Anggaran</label>
+            <select name="budget" class="form-control form-select">
+              <option value="">Semua Harga</option>
+              {% for v,l in [('murah','Terjangkau (< Rp100.000)'),('sedang','Menengah (Rp100K–500K)'),('mahal','Premium (> Rp500.000)')] %}
+              <option value="{{ v }}"
+                {% if form_data.get('budget')==v or (not form_data and prefs and prefs.anggaran==v) %}selected{% endif %}>
+                {{ l }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-calendar-star" style="color:var(--gold);"></i> Acara</label>
+            <select name="acara" class="form-control form-select">
+              <option value="">Semua Acara</option>
+              {% for a in ['Pernikahan','Wisuda','Formal','Casual','Festival','Upacara Adat','Sehari-hari','Fashion'] %}
+              <option value="{{ a }}"
+                {% if form_data.get('acara')==a or (not form_data and prefs and prefs.acara_favorit==a) %}selected{% endif %}>
+                {{ a }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Warna Favorit</label>
+            <input type="text" name="warna" class="form-control"
+                   placeholder="mis. Biru, Merah, Coklat"
+                   value="{{ form_data.get('warna', (prefs.warna_favorit or '') if prefs else '') }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kata Kunci Filosofi</label>
+            <input type="text" name="filosofi" class="form-control"
+                   placeholder="mis. keberanian, cinta, kemakmuran"
+                   value="{{ form_data.get('filosofi', (prefs.filosofi_kw or '') if prefs else '') }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pulau / Wilayah</label>
+            <select name="pulau" class="form-control form-select">
+              <option value="">Semua Pulau</option>
+              {% for p in pulaus %}
+              <option value="{{ p.pulau }}"
+                {% if form_data.get('pulau')==p.pulau or (not form_data and prefs and prefs.wilayah_favorit==p.pulau) %}selected{% endif %}>
+                {{ p.pulau }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jenis Batik</label>
+            <select name="jenis_batik" class="form-control form-select">
+              <option value="">Semua Jenis</option>
+              {% for j in ['Tulis','Cap','Kombinasi','Printing'] %}
+              <option value="{{ j }}"
+                {% if form_data.get('jenis_batik')==j or (not form_data and prefs and prefs.jenis_batik==j) %}selected{% endif %}>
+                Batik {{ j }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:0.75rem;">
+          <i class="fas fa-magnifying-glass-sparkles"></i> Temukan Motif Untukku
+        </button>
+      </form>
+    </div>
+
+    <!-- Hasil -->
+    {% if results %}
+    {% if alasan %}
+    <div class="alasan-card">
+      <p><i class="fas fa-lightbulb" style="color:var(--gold);"></i>
+        <strong>Alasan rekomendasi:</strong> {{ alasan }}
+      </p>
+    </div>
+    {% endif %}
+
+    <div class="section-header" style="margin-bottom:1.5rem;">
+      <p class="section-eyebrow">Hasil Rekomendasi</p>
+      <h2 style="color:var(--indigo);">Top {{ results|length }} Motif Untukmu</h2>
+    </div>
+
+    <div class="results-grid">
+      {% for m in results %}
+      <div class="card" style="position:relative;">
+        <div class="result-rank">{{ loop.index }}</div>
+        <div class="motif-card-placeholder" style="aspect-ratio:16/9;overflow:hidden;padding:0;">
+          {% if m.gambar %}
+          <img src="{{ url_for('static', filename='images/' ~ m.gambar) }}"
+            alt="{{ m.nama_motif }}"
+            style="width:100%;height:100%;object-fit:cover;">
+          {% else %}
+          <i class="fas fa-layer-group"></i>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <div style="font-size:0.78rem;color:var(--gold);font-family:var(--font-ui);font-weight:500;margin-bottom:0.25rem;">
+            {{ m.pulau }} · {{ m.asal_daerah }}
+          </div>
+          <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--indigo);font-weight:600;margin-bottom:0.5rem;">
+            {{ m.nama_motif }}
+          </div>
+          {% if m.filosofi %}
+          <p style="font-size:0.85rem;color:var(--ink-soft);margin-bottom:1rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            {{ m.filosofi }}
+          </p>
+          {% endif %}
+          {% set jenis_filter = form_data.get('jenis_batik', '') %}
+          {% if jenis_filter == 'Tulis' and m.harga_tulis_min %}
+          <p style="font-size:0.82rem;color:var(--ink-soft);margin-bottom:1rem;">
+            <i class="fas fa-tag" style="color:var(--gold);font-size:0.72rem;"></i>
+            Tulis: Rp{{ '{:,.0f}'.format(m.harga_tulis_min) }}+
+          </p>
+          {% elif jenis_filter == 'Cap' and m.harga_cap_min %}
+          <p style="font-size:0.82rem;color:var(--ink-soft);margin-bottom:1rem;">
+            <i class="fas fa-tag" style="color:var(--gold);font-size:0.72rem;"></i>
+            Cap: Rp{{ '{:,.0f}'.format(m.harga_cap_min) }}+
+          </p>
+          {% elif m.harga_cap_min and m.harga_tulis_min %}
+          <p style="font-size:0.82rem;color:var(--ink-soft);margin-bottom:1rem;">
+            <i class="fas fa-tag" style="color:var(--gold);font-size:0.72rem;"></i>
+            Cap: Rp{{ '{:,.0f}'.format(m.harga_cap_min) }}+ · Tulis: Rp{{ '{:,.0f}'.format(m.harga_tulis_min) }}+
+          </p>
+          {% elif m.harga_cap_min %}
+          <p style="font-size:0.82rem;color:var(--ink-soft);margin-bottom:1rem;">
+            <i class="fas fa-tag" style="color:var(--gold);font-size:0.72rem;"></i>
+            Cap: Rp{{ '{:,.0f}'.format(m.harga_cap_min) }}+
+          </p>
+          {% elif m.harga_tulis_min %}
+          <p style="font-size:0.82rem;color:var(--ink-soft);margin-bottom:1rem;">
+            <i class="fas fa-tag" style="color:var(--gold);font-size:0.72rem;"></i>
+            Tulis: Rp{{ '{:,.0f}'.format(m.harga_tulis_min) }}+
+          </p>
+          {% endif %}
+          <a href="{{ url_for('detail_motif', id_motif=m.id_motif) }}" class="btn btn-primary" style="width:100%;text-align:center;">
+            <i class="fas fa-book-open"></i> Lihat Detail
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% elif request.method == 'POST' %}
+    <div style="text-align:center;padding:3rem;background:white;border-radius:var(--radius-xl);border:1px solid var(--border);">
+      <i class="fas fa-filter-circle-xmark" style="font-size:3rem;color:var(--gold);opacity:0.3;display:block;margin-bottom:1rem;"></i>
+      <h3 style="color:var(--indigo);margin-bottom:0.5rem;">Tidak Ada Motif yang Cocok</h3>
+      <p style="color:var(--ink-soft);">Coba perluas kriteria pencarianmu.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

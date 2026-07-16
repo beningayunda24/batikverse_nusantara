@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block title %}Riwayat Prediksi — BATIKVERSE NUSANTARA{% endblock %}
+
+{% block content %}
+
+<section class="detail-hero" style="padding: 3rem 0;">
+  <div class="container">
+    <p class="section-eyebrow" style="color: var(--gold);">Akun Saya</p>
+    <h1 style="color: var(--gold-pale);">Riwayat Klasifikasi</h1>
+    <p style="color: rgba(245,232,200,0.7); margin-top: 0.5rem;">
+      Rekap klasifikasi batik yang telah Anda lakukan.
+    </p>
+  </div>
+</section>
+
+<section class="section-sm" style="background: var(--cream);">
+  <div class="container">
+
+    <!-- Filter Bar -->
+    <div class="history-filter-bar">
+      <form method="GET" action="{{ url_for('history') }}">
+        <div class="history-filter-grid">
+          <div class="search-input-wrap">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="q" class="form-input search-input"
+                   placeholder="Cari nama file atau motif..."
+                   value="{{ q }}">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.75rem;">Dari Tanggal</label>
+            <input type="date" name="dari" class="form-input" value="{{ tgl_dari }}"
+                   style="padding: 0.55rem 0.85rem;">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:0.75rem;">Sampai Tanggal</label>
+            <input type="date" name="ke"   class="form-input" value="{{ tgl_ke }}"
+                   style="padding: 0.55rem 0.85rem;">
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:flex-end;">
+            <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+              <i class="fas fa-filter"></i> Filter
+            </button>
+            {% if q or tgl_dari or tgl_ke %}
+            <a href="{{ url_for('history') }}" class="btn btn-outline" style="white-space:nowrap;">
+              <i class="fas fa-xmark"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </form>
+    </div>
+
+    {% if riwayat %}
+    <!-- Stats -->
+    <div class="grid grid-3" style="gap:1rem;margin-bottom:1.75rem;">
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;text-align:center;">
+        <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--gold);">{{ riwayat|length }}</div>
+        <div style="font-family:var(--font-ui);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-top:0.25rem;">Total Ditampilkan</div>
+      </div>
+      {% set sukses = riwayat|selectattr('hasil_prediksi','ne','Tidak dikenali')|selectattr('hasil_prediksi','ne','non_batik')|list|length %}
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;text-align:center;">
+        <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--gold);">{{ sukses }}</div>
+        <div style="font-family:var(--font-ui);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-top:0.25rem;">Berhasil Dikenali</div>
+      </div>
+      {% set gagal = riwayat|length - sukses %}
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;text-align:center;">
+        <div style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--gold);">{{ gagal }}</div>
+        <div style="font-family:var(--font-ui);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin-top:0.25rem;">Tidak Dikenali</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div style="overflow-x:auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-md);border:1px solid var(--border);">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th style="width:72px;">Foto</th>
+            <th>Nama File</th>
+            <th>Hasil Prediksi</th>
+            <th>Confidence</th>
+            <th>Tanggal</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in riwayat %}
+          <tr>
+            <td>
+              {% if r.nama_file %}
+              <img class="history-thumb"
+                   src="{{ url_for('uploaded_file', filename=r.nama_file) }}"
+                   alt="{{ r.nama_file }}" loading="lazy"
+                   style="width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius, 6px); border: 1px solid var(--border);">
+              {% else %}
+              <div class="history-thumb-placeholder"><i class="fas fa-image"></i></div>
+              {% endif %}
+            </td>
+            <td>
+              <span style="font-family:var(--font-ui);font-size:0.85rem;color:var(--ink);word-break:break-all;">
+                {{ r.nama_file[:45] }}{% if r.nama_file|length > 45 %}…{% endif %}
+              </span>
+            </td>
+            <td>
+              {% if r.hasil_prediksi and r.hasil_prediksi not in ['Tidak dikenali','non_batik'] %}
+                <span style="font-family:var(--font-display);font-size:0.95rem;color:var(--indigo);font-weight:600;">{{ r.hasil_prediksi }}</span>
+                {% if r.id_motif %}
+                <br><a href="{{ url_for('detail_motif', id_motif=r.id_motif) }}"
+                       style="font-size:0.78rem;color:var(--gold);">Detail →</a>
+                {% endif %}
+              {% elif r.hasil_prediksi == 'non_batik' %}
+                <span style="color:#e65100;font-size:0.88rem;font-style:italic;">Bukan Batik</span>
+              {% else %}
+                <span style="color:var(--terracotta);font-style:italic;font-size:0.88rem;">Tidak dikenali</span>
+              {% endif %}
+            </td>
+            <td>
+              {% set pct = (r.confidence * 100)|round(1) if r.confidence else 0 %}
+              <span class="confidence-pill {{ 'conf-high' if r.confidence and r.confidence >= 0.8 else 'conf-medium' if r.confidence and r.confidence >= 0.6 else 'conf-low' }}">
+                {{ pct }}%
+              </span>
+            </td>
+            <td style="font-size:0.82rem;color:var(--ink-soft);white-space:nowrap;">
+              {{ r.tanggal_prediksi.strftime('%d %b %Y') if r.tanggal_prediksi else '—' }}<br>
+              <span style="font-size:0.75rem;opacity:0.7;">{{ r.tanggal_prediksi.strftime('%H:%M') if r.tanggal_prediksi else '' }}</span>
+            </td>
+            <td>
+              <form method="POST" action="{{ url_for('delete_history', id_prediksi=r.id_prediksi) }}"
+                    class="confirm-delete" style="display:inline;">
+                <button type="submit" class="delete-btn">
+                  <i class="fas fa-trash-can"></i> Hapus
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p style="text-align:center;font-size:0.8rem;color:var(--ink-soft);margin-top:1.25rem;">
+      Menampilkan {{ riwayat|length }} dari maks. 50 prediksi terbaru milik akun Anda.
+    </p>
+    
+    <div style="text-align:center;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <a href="{{ url_for('predict') }}" class="btn btn-primary">
+        <i class="fas fa-camera"></i> Klasifikasi Baru
+      </a>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div style="text-align:center;padding:5rem 2rem;">
+      <i class="fas fa-clock-rotate-left" style="font-size:4rem;color:var(--gold);opacity:0.25;display:block;margin-bottom:1.5rem;"></i>
+      <h2 style="color:var(--indigo);margin-bottom:0.75rem;">
+        {% if q or tgl_dari or tgl_ke %}Tidak Ada Hasil Filter{% else %}Belum Ada Riwayat{% endif %}
+      </h2>
+      <p style="color:var(--ink-soft);max-width:380px;margin:0 auto 2rem;">
+        {% if q or tgl_dari or tgl_ke %}
+          Coba ubah filter pencarian.
+          <a href="{{ url_for('history') }}" style="color:var(--gold);">Reset filter</a>
+        {% else %}
+          Mulai identifikasi gambar batikmu menggunakan AI MobileNetV2.
+        {% endif %}
+      </p>
+      <a href="{{ url_for('predict') }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-camera"></i> Mulai Klasifikasi AI
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

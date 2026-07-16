@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block title %}Eksplorasi Motif Batik — BATIKVERSE NUSANTARA{% endblock %}
+
+{% block content %}
+
+<section class="detail-hero" style="padding:3rem 0;">
+  <div class="container">
+    <p class="section-eyebrow" style="color:var(--gold);">Koleksi Nusantara</p>
+    <h1 style="color:var(--gold-pale);">Eksplorasi Motif Batik</h1>
+    <p style="color:rgba(245,232,200,0.7);margin-top:0.5rem;max-width:540px;">
+      22 motif batik dari seluruh penjuru Indonesia — dari Sabang sampai Merauke.
+    </p>
+  </div>
+</section>
+
+<section class="section-sm" style="background:var(--cream);">
+  <div class="container">
+
+    <!-- Pulau Filter Tabs -->
+    <div class="pulau-tabs">
+      <a href="{{ url_for('eksplorasi') }}"
+         class="pulau-tab {% if not selected_pulau %}active{% endif %}">
+        <i class="fas fa-globe-asia"></i> Semua Pulau
+      </a>
+      {% for p in pulaus %}
+      <a href="{{ url_for('eksplorasi', pulau=p.pulau) }}"
+         class="pulau-tab {% if selected_pulau == p.pulau %}active{% endif %}">
+        {{ p.pulau }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="search-bar">
+      <form method="GET" action="{{ url_for('eksplorasi') }}">
+        {% if selected_pulau %}
+        <input type="hidden" name="pulau" value="{{ selected_pulau }}">
+        {% endif %}
+        <div class="search-row">
+          <div class="search-input-wrap">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" name="q" class="form-control search-input"
+                   placeholder="Cari nama motif, daerah, filosofi…"
+                   value="{{ search }}">
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i> Cari
+          </button>
+        </div>
+        <div class="filter-row" style="grid-template-columns:repeat(4,1fr);">
+          <div>
+            <label class="form-label">Provinsi</label>
+            <select name="provinsi" class="form-control form-select">
+              <option value="">Semua Provinsi</option>
+              {% for p in provinsis %}
+              <option value="{{ p.provinsi }}" {% if selected_provinsi==p.provinsi %}selected{% endif %}>
+                {{ p.provinsi }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Jenis Batik</label>
+            <select name="jenis" class="form-control form-select">
+              <option value="">Semua Jenis</option>
+              {% for j in ['Tulis','Cap','Kombinasi','Printing'] %}
+              <option value="{{ j }}" {% if selected_jenis==j %}selected{% endif %}>{{ j }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Warna Dominan</label>
+            <select name="warna" class="form-control form-select">
+              <option value="">Semua Warna</option>
+              {% for w in warnas %}
+              <option value="{{ w.warna_dominan }}" {% if selected_warna==w.warna_dominan %}selected{% endif %}>
+                {{ w.warna_dominan }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Kisaran Harga</label>
+            <select name="harga" class="form-control form-select">
+              <option value="">Semua Harga</option>
+              <option value="murah"  {% if selected_harga=='murah'  %}selected{% endif %}>Terjangkau (&lt; Rp100K)</option>
+              <option value="sedang" {% if selected_harga=='sedang' %}selected{% endif %}>Menengah (Rp100K–500K)</option>
+              <option value="mahal"  {% if selected_harga=='mahal'  %}selected{% endif %}>Premium (&gt; Rp500K)</option>
+            </select>
+          </div>
+        </div>
+        {% if search or selected_provinsi or selected_jenis or selected_warna or selected_harga %}
+        <div style="margin-top:0.75rem;">
+          <a href="{{ url_for('eksplorasi', pulau=selected_pulau) }}" class="btn btn-sm btn-outline">
+            <i class="fas fa-xmark"></i> Reset Filter
+          </a>
+        </div>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- Result count -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <p style="color:var(--ink-soft);font-size:0.88rem;">
+        Menampilkan <strong style="color:var(--indigo);">{{ motifs|length }}</strong> motif
+        {% if selected_pulau %} dari <strong>{{ selected_pulau }}</strong>{% endif %}
+      </p>
+      {% if not current_user %}
+      <a href="{{ url_for('predict') }}" style="font-size:0.82rem;color:var(--gold);">
+        <i class="fas fa-brain"></i> Identifikasi via AI
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Grid Motif -->
+    {% if motifs %}
+    <div class="grid grid-auto" style="gap:1.5rem;">
+      {% for m in motifs %}
+      <div class="card motif-card" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
+    
+        {% if m.gambar %}
+        <div class="motif-card-image">
+          <img src="{{ url_for('static', filename='images/' ~ m.gambar) }}" alt="{{ m.nama_motif }}" style="width: 100%; display: block;">
+        </div>
+        {% else %}
+        <div class="motif-card-placeholder">
+          <i class="fas fa-layer-group"></i>
+        </div>
+        {% endif %}
+
+        <div class="motif-card-body" style="display: flex; flex-direction: column; flex-grow: 1; padding: 1.25rem;">
+          <div class="motif-card-daerah">
+            <i class="fas fa-map-pin" style="font-size:0.7rem;"></i>
+            {{ m.pulau }} · {{ m.asal_daerah }}
+          </div>
+      
+          <div class="motif-card-name" style="font-weight: bold; font-size: 1.25rem; margin: 0.5rem 0; color: var(--indigo);">
+            {{ m.nama_motif }}
+          </div>
+
+          {% if m.filosofi %}
+          <p class="motif-card-desc" style="flex-grow: 1;">{{ m.filosofi }}</p>
+          {% endif %}
+
+          <div class="motif-card-footer" style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; pt: 1rem;">
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+              {% if m.jenis_batik %}
+              <span class="badge badge-indigo" style="font-size:0.7rem;">{{ m.jenis_batik }}</span>
+              {% endif %}
+              {% if m.tingkat_kelangkaan %}
+              <span class="badge badge-gold" style="font-size:0.7rem;">{{ m.tingkat_kelangkaan }}</span>
+              {% endif %}
+            </div>
+            <a href="{{ url_for('detail_motif', id_motif=m.id_motif) }}" class="btn btn-sm btn-outline">Lihat Detail</a>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:5rem 2rem;">
+      <i class="fas fa-magnifying-glass" style="font-size:3.5rem;color:var(--gold);opacity:0.25;display:block;margin-bottom:1.5rem;"></i>
+      <h3 style="color:var(--indigo);margin-bottom:0.75rem;">Tidak ada motif ditemukan</h3>
+      <p style="color:var(--ink-soft);margin-bottom:1.5rem;">Coba kata kunci atau filter yang berbeda.</p>
+      <a href="{{ url_for('eksplorasi') }}" class="btn btn-primary">
+        <i class="fas fa-rotate-left"></i> Reset Pencarian
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}
