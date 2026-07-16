@@ -9,12 +9,12 @@ Platform edukasi batik Indonesia berbasis AI — Proyek Penelitian Informatika U
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| **Eksplorasi Motif** | 20 motif batik lengkap dengan sejarah, filosofi, galeri |
+| **Eksplorasi Motif** | 22 motif batik lengkap dengan sejarah, filosofi, makna |
 | **Detail Motif** | Informasi mendalam: harga, warna, acara, kelangkaan |
 | **Batik Finder** | Rekomendasi motif berdasarkan budget, acara, warna |
 | **Perbandingan** | Bandingkan 2 motif batik secara berdampingan |
 | **Klasifikasi AI** | Identifikasi motif dari foto (MobileNetV2) |
-| **Riwayat Prediksi** | 50 klasifikasi terbaru dari seluruh pengguna |
+| **Riwayat Prediksi** | 50 klasifikasi terbaru pengguna |
 
 ---
 
@@ -36,7 +36,6 @@ batikverse/
 ├── schema.sql              # MySQL schema + seed data (20 motif)
 ├── requirements.txt        # Python dependencies
 ├── Procfile                # Render/Railway deployment
-├── render.yaml             # Render config
 ├── .env.example            # Environment variables template
 ├── models/
 │   ├── model_batik_mobilenetv2.h5   # TF model (letakkan di sini)
