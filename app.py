@@ -28,13 +28,14 @@ app.config['MAX_CONTENT_LENGTH']  = 16 * 1024 * 1024
 app.config['ALLOWED_EXTENSIONS']  = {'png', 'jpg', 'jpeg', 'webp'}
 
 DB_CONFIG = {
-    'host':      os.environ.get('DB_HOST',     'localhost'),
-    'database':  os.environ.get('DB_NAME',     'batikverse_db'),
-    'user':      os.environ.get('DB_USER',     'root'),
-    'password':  os.environ.get('DB_PASSWORD', ''),
-    'port':      int(os.environ.get('DB_PORT', 3306)),
-    'charset':   'utf8mb4',
+    'host': os.environ.get('DB_HOST', 'localhost'),
+    'database': os.environ.get('DB_NAME', 'batikverse_db'),
+    'user': os.environ.get('DB_USER', 'root'),
+    'password': os.environ.get('DB_PASSWORD', ''),
+    'port': int(os.environ.get('DB_PORT', 3306)),
+    'charset': 'utf8mb4',
     'collation': 'utf8mb4_unicode_ci',
+    'ssl_disabled': False
 }
 
 # ═════════════════════════════════════════════════════════════════════════════
