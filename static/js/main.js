@@ -122,40 +122,52 @@ function showPreview(file) {
   reader.readAsDataURL(file);
 }
 
-input.addEventListener('change', () => {
-  if (input.files[0]) showPreview(input.files[0]);
-});
+if (zone && input && form) {
 
-zone.addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    input.click();
-  }
-});
+    input.addEventListener('change', () => {
+        if (input.files.length > 0) {
+            showPreview(input.files[0]);
+        }
+    });
 
-zone.addEventListener('dragover', e => {
-  e.preventDefault();
-  zone.classList.add('drag-over');
-});
-zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-zone.addEventListener('drop', e => {
-  e.preventDefault();
-  zone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) {
-    input.files = e.dataTransfer.files;
-    showPreview(file);
-  }
-});
+    zone.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            input.click();
+        }
+    });
 
-form.addEventListener('submit', (e) => {
-  if (!input.files.length || submitBtn.disabled) {
-    e.preventDefault();
-    return;
-  }
-  submitBtn.style.display = 'none';
-  loader.classList.add('active');
-});
+    zone.addEventListener('dragover', e => {
+        e.preventDefault();
+        zone.classList.add('drag-over');
+    });
+
+    zone.addEventListener('dragleave', () => {
+        zone.classList.remove('drag-over');
+    });
+
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            input.files = e.dataTransfer.files;
+            showPreview(file);
+        }
+    });
+
+    form.addEventListener('submit', e => {
+        if (!input.files.length || submitBtn.disabled) {
+            e.preventDefault();
+            return;
+        }
+
+        submitBtn.style.display = 'none';
+        loader.classList.add('active');
+    });
+
+}
 
 /* ── Compare: pre-select from URL param ─────────────────────────── */
 const urlParams = new URLSearchParams(window.location.search);
