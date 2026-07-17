@@ -23,7 +23,7 @@ except ImportError:
 # ═════════════════════════════════════════════════════════════════════════════
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'batikverse-secret-dev-2025')
-app.config['UPLOAD_FOLDER']       = '/tmp/uploads'
+app.config['UPLOAD_FOLDER']       = os.environ.get('UPLOAD_FOLDER', '/tmp/uploads')
 app.config['MAX_CONTENT_LENGTH']  = 16 * 1024 * 1024
 app.config['ALLOWED_EXTENSIONS']  = {'png', 'jpg', 'jpeg', 'webp'}
 
@@ -704,7 +704,7 @@ def too_large(e):
     flash('File terlalu besar. Maksimum 16 MB.', 'error')
     return redirect(url_for('predict'))
 
-# ─────────────────────────────────────────────────────────────────────────────
+load_ml_model()
+
 if __name__ == '__main__':
-    load_ml_model()
     app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
