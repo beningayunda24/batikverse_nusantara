@@ -70,49 +70,92 @@ document.querySelectorAll('.confidence-fill').forEach(bar => {
 });
 
 /* ── Predict page: upload zone ───────────────────────────────────── */
-const uploadZone = document.getElementById('uploadZone');
-const fileInput  = document.getElementById('fileInput');
-const submitBtn  = document.getElementById('submitBtn');
-const predictForm = document.getElementById('predictForm');
-const loader     = document.getElementById('loader');
+const zone      = document.getElementById('uploadZone');
+const input     = document.getElementById('fileInput');
+const defDiv    = document.getElementById('uploadDefault');
+const prevDiv   = document.getElementById('uploadPreview');
+const prevImg   = document.getElementById('previewImg');
+const prevName  = document.getElementById('previewName');
+const submitBtn = document.getElementById('submitBtn');
+const form      = document.getElementById('predictForm');
+const loader    = document.getElementById('loader');
+const errorBox  = document.getElementById('uploadError');
 
-if (uploadZone && fileInput) {
-  function showPreview(file) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('previewImg').src = e.target.result;
-      document.getElementById('previewName').textContent = file.name;
-      document.getElementById('uploadDefault').style.display = 'none';
-      document.getElementById('uploadPreview').style.display = 'block';
-      if (submitBtn) submitBtn.disabled = false;
-    };
-    reader.readAsDataURL(file);
+const MAX_SIZE = 16 * 1024 * 1024; // 16 MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+function validateFile(file) {
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return 'Format file tidak didukung. Gunakan JPG, PNG, atau WEBP.';
   }
-
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) showPreview(fileInput.files[0]);
-  });
-
-  uploadZone.addEventListener('dragover', e => {
-    e.preventDefault(); uploadZone.classList.add('drag-over');
-  });
-  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-  uploadZone.addEventListener('drop', e => {
-    e.preventDefault(); uploadZone.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      fileInput.files = e.dataTransfer.files;
-      showPreview(file);
-    }
-  });
-
-  if (predictForm && loader && submitBtn) {
-    predictForm.addEventListener('submit', () => {
-      submitBtn.style.display = 'none';
-      loader.classList.add('active');
-    });
+  if (file.size > MAX_SIZE) {
+    return 'Ukuran file melebihi batas 16 MB.';
   }
+  return null;
 }
+
+function resetUpload() {
+  defDiv.style.display = 'block';
+  prevDiv.style.display = 'none';
+  submitBtn.disabled = true;
+  input.value = '';
+}
+
+function showPreview(file) {
+  const errorMsg = validateFile(file);
+  if (errorMsg) {
+    errorBox.textContent = errorMsg;
+    errorBox.style.display = 'block';
+    resetUpload();
+    return;
+  }
+  errorBox.style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    prevImg.src = e.target.result;
+    prevName.textContent = file.name;
+    defDiv.style.display = 'none';
+    prevDiv.style.display = 'block';
+    submitBtn.disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+input.addEventListener('change', () => {
+  if (input.files[0]) showPreview(input.files[0]);
+});
+
+zone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    input.click();
+  }
+});
+
+zone.addEventListener('dragover', e => {
+  e.preventDefault();
+  zone.classList.add('drag-over');
+});
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    input.files = e.dataTransfer.files;
+    showPreview(file);
+  }
+});
+
+form.addEventListener('submit', (e) => {
+  if (!input.files.length || submitBtn.disabled) {
+    e.preventDefault();
+    return;
+  }
+  submitBtn.style.display = 'none';
+  loader.classList.add('active');
+});
 
 /* ── Compare: pre-select from URL param ─────────────────────────── */
 const urlParams = new URLSearchParams(window.location.search);
