@@ -1,11 +1,13 @@
 Flask==3.0.3
 gunicorn==22.0.0
-tensorflow==2.20.0
-keras==3.11.3
+
+tensorflow==2.16.1
 numpy==1.26.4
-h5py==3.14.0
-pillow==10.4.0
+h5py==3.11.0
+
+Pillow==10.4.0
 opencv-python-headless==4.10.0.84
+
 mysql-connector-python==9.4.0
 python-dotenv==1.0.1
 requests==2.32.5
